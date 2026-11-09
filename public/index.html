@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GD Private Server</title>
+<title>Eternal GDPS</title>
 <style>
-:root{--bg:#dfe9ff;--pn:#fff;--tx:#0c1b4d;--mu:#4c5b92;--ac:#e8a800;--on:#0c1b4d;--bd:#9db4f5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1f6e;--pn:#0a1546;--tx:#f2f5ff;--mu:#a9b8ec;--ac:#ffd23f;--on:#0a1546;--bd:#3d63e0}}
-:root[data-theme="dark"]{--bg:#0c1f6e;--pn:#0a1546;--tx:#f2f5ff;--mu:#a9b8ec;--ac:#ffd23f;--on:#0a1546;--bd:#3d63e0}
+:root{--bg:#f0f0f0;--pn:#fff;--tx:#111;--mu:#595959;--ac:#e10600;--on:#fff;--bd:#cfcfcf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0a0a;--pn:#161616;--tx:#f5f5f5;--mu:#a3a3a3;--ac:#f0201a;--on:#fff;--bd:#2e2e2e}}
+:root[data-theme="dark"]{--bg:#0a0a0a;--pn:#161616;--tx:#f5f5f5;--mu:#a3a3a3;--ac:#f0201a;--on:#fff;--bd:#2e2e2e}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 Arial,Helvetica,sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--pn);z-index:10}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--pn);border-bottom:3px solid var(--bd);display:flex;gap:6px;align-items:center;padding:8px 12px;overflow-x:auto}
-header a{color:var(--tx);text-decoration:none;font-weight:700;padding:6px 12px;border-radius:6px;white-space:nowrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#0a0a0a;z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:#0a0a0a;border-bottom:3px solid #e10600;display:flex;gap:6px;align-items:center;padding:8px 12px;overflow-x:auto}
+header a{color:#f5f5f5;text-decoration:none;font-weight:700;padding:6px 12px;border-radius:6px;white-space:nowrap}
 header a.on{background:var(--ac);color:var(--on)}
 #adm{margin-left:auto}
 main{max-width:760px;margin:0 auto;padding:16px 12px 48px}
@@ -30,6 +30,14 @@ h1{font-size:2rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:12px}
 .grid .card{margin:0;text-align:center}
 .grid b{display:block;font:900 1.9rem "Arial Black",Arial,sans-serif;color:var(--ac)}
+header a.logo{padding:0;line-height:0;margin-right:6px}
+header .s.g{color:#f5f5f5;border-color:#555}
+.hh{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.hh svg{flex:none}
+.b.dc{background:#5865f2;color:#fff}
+.b.yt{background:#f00;color:#fff}
+.b.dl{background:#fff;color:#0a0a0a;border:2px solid var(--tx)}
+.steps p{margin:.35em 0;overflow-wrap:anywhere}
 .mu{color:var(--mu);font-size:.9rem}
 .lv{display:flex;gap:12px;align-items:flex-start}
 .rk{font:900 1.5rem "Arial Black",Arial,sans-serif;color:var(--ac);min-width:52px}
@@ -66,10 +74,10 @@ function players(){const m={};S.levels.forEach((l,i)=>l.rec.forEach(r=>{const p=
 function creators(){const m={};S.levels.forEach(l=>{if(l.cp)m[l.by]=(m[l.by]||0)+l.cp});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 const newsCard=(n,i)=>`<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><p>${esc(n.x).replace(/\n/g,'<br>')}</p>${admin?`<button class="s g" data-act="delN" data-i="${i}">Удалить</button>`:''}</div>`;
 const R={
-home(){const c=S.cfg,lk=[['discord','Discord'],['download','Скачать клиент'],['youtube','YouTube']].filter(([k])=>c[k]).map(([k,t])=>`<a class="b" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
-return `<section class="hero"><h1>${esc(c.name)}</h1><p>${esc(c.tag)}</p><div class="row">${lk||'<span class="mu">Ссылки добавляются в режиме админа.</span>'}</div>${admin?'<button class="s g" data-act="cfg">Править главную</button>':''}</section>
+home(){const c=S.cfg,lk=[['discord','Discord','dc'],['download','Скачать клиент','dl'],['youtube','▶ YouTube','yt']].filter(([k])=>c[k]).map(([k,t,cl])=>`<a class="b ${cl}" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
+return `<section class="hero"><div class="hh">${logo(92)}<div><h1>${esc(c.name)}</h1><p>${esc(c.tag)}</p></div></div><div class="row">${lk||'<span class="mu">Ссылки добавляются в режиме админа.</span>'}</div>${admin?'<button class="s g" data-act="cfg">Править главную</button>':''}</section>
 <div class="grid"><div class="card"><b>${S.levels.length}</b>уровней в списке</div><div class="card"><b>${players().length}</b>игроков с рекордами</div><div class="card"><b>${S.news.length}</b>новостей</div></div>
-<div class="card"><h2>Как подключиться</h2><ol>${c.steps.split('\n').filter(Boolean).map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div>
+<div class="card"><h2>Как подключиться</h2><div class="steps">${c.steps.split('\n').filter(Boolean).map(s=>`<p>${esc(s).replace(/https?:\/\/[^\s<]+/g,m=>`<a href="${m}" target="_blank" rel="noopener">${m}</a>`)}</p>`).join('')}</div></div>
 ${S.news.slice(0,1).map((n)=>newsCard(n,0)).join('')}`},
 list(){return `<h1>Демонлист</h1>${admin?'<div class="row"><button class="b" data-act="addL">Добавить уровень</button></div>':''}`+(S.levels.map((l,i)=>`<div class="card lv"><div class="rk">#${i+1}</div><div class="in"><h3>${esc(l.n)}</h3><div class="mu">Автор: ${esc(l.by)}. Верифаер: ${esc(l.ver||'нет')}. Очки: ${pts(i)}.${l.vid?` <a href="${u(l.vid)}" target="_blank" rel="noopener">Видео</a>`:''}</div><details><summary>Рекорды (${l.rec.length})</summary>${l.rec.map((r,j)=>`<div class="rec">${esc(r.p)}: ${esc(r.pct)}%${r.v?` <a href="${u(r.v)}" target="_blank" rel="noopener">видео</a>`:''}${admin?` <button class="s g" data-act="delR" data-i="${i}" data-j="${j}">Удалить</button>`:''}</div>`).join('')||'<div class="mu">Пока нет рекордов.</div>'}</details></div>${admin?`<div class="ctl"><button class="s" data-act="up" data-i="${i}">Выше</button><button class="s" data-act="dn" data-i="${i}">Ниже</button><button class="s g" data-act="edL" data-i="${i}">Править</button><button class="s g" data-act="addR" data-i="${i}">Рекорд</button><button class="s g" data-act="delL" data-i="${i}">Удалить</button></div>`:''}</div>`).join('')||'<div class="card">Список пуст. Включите режим админа и добавьте первый уровень.</div>')},
 top(){const L=[...S.levels].sort((a,b)=>b.likes-a.likes).slice(0,10);
@@ -77,9 +85,13 @@ const t=(h,rows)=>`<div class="card"><h2>${h}</h2>${rows.map((r,i)=>`<div class=
 return `<h1>Топы</h1>`+t('Креатор поинты',creators().slice(0,10))+t('Игроки по очкам листа',players().slice(0,10).map(p=>[p.n,p.pts+' очков, '+p.c+' ур.']))+t('Лучшие уровни по лайкам',L.map(l=>[l.n+' ('+l.by+')',l.likes+' лайков']))},
 news(){return `<h1>Новости</h1>${admin?'<div class="row"><button class="b" data-act="addN">Добавить новость</button></div>':''}`+(S.news.map(newsCard).join('')||'<div class="card">Новостей пока нет.</div>')}
 };
+const INF='M256 236C256 236 210 160 150 160C100 160 80 200 80 236C80 272 100 312 150 312C210 312 256 236 256 236C256 236 302 160 362 160C412 160 432 200 432 236C432 272 412 312 362 312C302 312 256 236 256 236Z';
+const SP=[0,1,2,3,4,5,6,7].map(i=>{const x=96+i*40;return `M${x} 420L${x+20} 376L${x+40} 420Z`}).join('');
+const logo=n=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${n}" height="${n}" role="img" aria-label="Eternal GDPS"><rect width="512" height="512" rx="104" fill="#0d0d0d"/><rect x="14" y="14" width="484" height="484" rx="92" fill="none" stroke="#e10600" stroke-width="12"/><path d="${INF}" fill="none" stroke="#e10600" stroke-width="36" stroke-linejoin="round" stroke-linecap="round"/><path d="${INF}" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/><rect x="96" y="420" width="320" height="14" fill="#fff"/><path fill="#e10600" d="${SP}"/></svg>`;
+{const l=document.createElement('link');l.rel='icon';l.href='data:image/svg+xml,'+encodeURIComponent(logo(64));document.head.appendChild(l)}
 const NAV=[['home','Главная'],['list','Демонлист'],['top','Топы'],['news','Новости']];
 function render(){const r=R[location.hash.slice(1)]?location.hash.slice(1):'home';
-$('#nav').innerHTML=NAV.map(([k,t])=>`<a href="#${k}" class="${k==r?'on':''}">${t}</a>`).join('')+(canEdit?`<button id="adm" class="s ${admin?'':'g'}" data-act="adm">${admin?'Выйти из админки':'Режим админа'}</button>`:'');
+$('#nav').innerHTML=`<a class="logo" href="#home" aria-label="Главная">${logo(38)}</a>`+NAV.map(([k,t])=>`<a href="#${k}" class="${k==r?'on':''}">${t}</a>`).join('')+(canEdit?`<button id="adm" class="s ${admin?'':'g'}" data-act="adm">${admin?'Выйти из админки':'Режим админа'}</button>`:'');
 $('#app').innerHTML=R[r]()}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
 function queueSave(){clearTimeout(timer);timer=setTimeout(async()=>{try{const r=await fetch('/api/save',{method:'POST',headers:{'content-type':'application/json','x-admin-password':pw},body:JSON.stringify(S)});if(r.status==401){logout();render();toast('Сессия истекла, войдите снова')}else if(!r.ok)toast('Не сохранилось');else toast('Сохранено')}catch(e){toast('Нет связи с сервером')}},600)}
@@ -91,7 +103,7 @@ function putL(v,i){const L=S.levels,o={n:v.n||'Без названия',by:v.by|
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j,L=S.levels;
 if(a.startsWith('del')&&!b.dataset.arm){b.dataset.arm=1;b.textContent='Точно?';return}
 if(a=='adm'){if(admin){logout();return render()}return ask('Вход для админа',[['pw','Пароль','pw']],{},v=>{login(v.pw);return false})}
-const A={cfg:()=>ask('Главная страница',[['name','Название'],['tag','Описание'],['discord','Ссылка на Discord'],['download','Ссылка на клиент'],['youtube','Ссылка на YouTube'],['steps','Как подключиться (шаг на строку)','area']],S.cfg,v=>Object.assign(S.cfg,v)),
+const A={cfg:()=>ask('Главная страница',[['name','Название'],['tag','Описание'],['discord','Ссылка на Discord'],['download','Ссылка на клиент'],['youtube','Ссылка на YouTube'],['steps','Как подключиться (строка = абзац, ссылки кликабельны)','area']],S.cfg,v=>Object.assign(S.cfg,v)),
 addL:()=>ask('Новый уровень',LF,{pos:L.length+1,cp:0,likes:0},v=>putL(v)),
 edL:()=>ask('Уровень',LF,{...L[i],pos:i+1},v=>putL(v,i)),
 up:()=>{if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];commit()}},
