@@ -15,7 +15,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:#0a0a0a;border-bottom:3px solid #e10600;display:flex;gap:6px;align-items:center;padding:8px 12px;overflow-x:auto}
 header a{color:#f5f5f5;text-decoration:none;font-weight:700;padding:6px 12px;border-radius:6px;white-space:nowrap}
 header a.on{background:var(--ac);color:var(--on)}
-#adm{margin-left:auto}
+#thm{margin-left:auto}
 main{max-width:760px;margin:0 auto;padding:16px 12px 48px}
 h1,h2,h3{font-family:"Arial Black",Arial,sans-serif;margin:.2em 0 .4em;line-height:1.15}
 h1{font-size:2rem}
@@ -85,13 +85,16 @@ const t=(h,rows)=>`<div class="card"><h2>${h}</h2>${rows.map((r,i)=>`<div class=
 return `<h1>Топы</h1>`+t('Креатор поинты',creators().slice(0,10))+t('Игроки по очкам листа',players().slice(0,10).map(p=>[p.n,p.pts+' очков, '+p.c+' ур.']))+t('Лучшие уровни по лайкам',L.map(l=>[l.n+' ('+l.by+')',l.likes+' лайков']))},
 news(){return `<h1>Новости</h1>${admin?'<div class="row"><button class="b" data-act="addN">Добавить новость</button></div>':''}`+(S.news.map(newsCard).join('')||'<div class="card">Новостей пока нет.</div>')}
 };
+try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+const curTheme=()=>document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('theme',t)}catch(e){}}
 const INF='M256 236C256 236 210 160 150 160C100 160 80 200 80 236C80 272 100 312 150 312C210 312 256 236 256 236C256 236 302 160 362 160C412 160 432 200 432 236C432 272 412 312 362 312C302 312 256 236 256 236Z';
 const SP=[0,1,2,3,4,5,6,7].map(i=>{const x=96+i*40;return `M${x} 420L${x+20} 376L${x+40} 420Z`}).join('');
 const logo=n=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${n}" height="${n}" role="img" aria-label="Eternal GDPS"><rect width="512" height="512" rx="104" fill="#0d0d0d"/><rect x="14" y="14" width="484" height="484" rx="92" fill="none" stroke="#e10600" stroke-width="12"/><path d="${INF}" fill="none" stroke="#e10600" stroke-width="36" stroke-linejoin="round" stroke-linecap="round"/><path d="${INF}" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/><rect x="96" y="420" width="320" height="14" fill="#fff"/><path fill="#e10600" d="${SP}"/></svg>`;
 {const l=document.createElement('link');l.rel='icon';l.href='data:image/svg+xml,'+encodeURIComponent(logo(64));document.head.appendChild(l)}
 const NAV=[['home','Главная'],['list','Демонлист'],['top','Топы'],['news','Новости']];
 function render(){const r=R[location.hash.slice(1)]?location.hash.slice(1):'home';
-$('#nav').innerHTML=`<a class="logo" href="#home" aria-label="Главная">${logo(38)}</a>`+NAV.map(([k,t])=>`<a href="#${k}" class="${k==r?'on':''}">${t}</a>`).join('')+(canEdit?`<button id="adm" class="s ${admin?'':'g'}" data-act="adm">${admin?'Выйти из админки':'Режим админа'}</button>`:'');
+$('#nav').innerHTML=`<a class="logo" href="#home" aria-label="Главная">${logo(38)}</a>`+NAV.map(([k,t])=>`<a href="#${k}" class="${k==r?'on':''}">${t}</a>`).join('')+`<button id="thm" class="s g" data-act="theme">${curTheme()=='dark'?'☀ День':'☾ Ночь'}</button>`+(canEdit?`<button id="adm" class="s ${admin?'':'g'}" data-act="adm">${admin?'Выйти из админки':'Режим админа'}</button>`:'');
 $('#app').innerHTML=R[r]()}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
 function queueSave(){clearTimeout(timer);timer=setTimeout(async()=>{try{const r=await fetch('/api/save',{method:'POST',headers:{'content-type':'application/json','x-admin-password':pw},body:JSON.stringify(S)});if(r.status==401){logout();render();toast('Сессия истекла, войдите снова')}else if(!r.ok)toast('Не сохранилось');else toast('Сохранено')}catch(e){toast('Нет связи с сервером')}},600)}
@@ -102,6 +105,7 @@ const LF=[['n','Название'],['by','Автор'],['ver','Верифаер'
 function putL(v,i){const L=S.levels,o={n:v.n||'Без названия',by:v.by||'?',ver:v.ver||'',cp:+v.cp||0,likes:+v.likes||0,vid:v.vid||'',rec:i==null?[]:L[i].rec};if(i!=null)L.splice(i,1);const p=Math.min(Math.max(+v.pos||L.length+1,1),L.length+1);L.splice(p-1,0,o)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j,L=S.levels;
 if(a.startsWith('del')&&!b.dataset.arm){b.dataset.arm=1;b.textContent='Точно?';return}
+if(a=='theme'){setTheme(curTheme()=='dark'?'light':'dark');return render()}
 if(a=='adm'){if(admin){logout();return render()}return ask('Вход для админа',[['pw','Пароль','pw']],{},v=>{login(v.pw);return false})}
 const A={cfg:()=>ask('Главная страница',[['name','Название'],['tag','Описание'],['discord','Ссылка на Discord'],['download','Ссылка на клиент'],['youtube','Ссылка на YouTube'],['steps','Как подключиться (строка = абзац, ссылки кликабельны)','area']],S.cfg,v=>Object.assign(S.cfg,v)),
 addL:()=>ask('Новый уровень',LF,{pos:L.length+1,cp:0,likes:0},v=>putL(v)),
