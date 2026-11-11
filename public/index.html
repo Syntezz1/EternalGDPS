@@ -69,7 +69,8 @@ let admin=false,canEdit=true,timer;
 const $=s=>document.querySelector(s);
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const u=x=>/^https?:\/\//i.test(x||'')?esc(x):'#';
-const pts=i=>Math.round(100*Math.pow(.93,i));
+const PT=[];for(let v=1000;v>=600;v-=40)PT.push(v);for(let v=580;v>=400;v-=20)PT.push(v);for(let v=396;v>=284;v-=4)PT.push(v);for(let v=280;v>=80;v-=8)PT.push(v);for(let v=79;v>=6;v--)PT.push(v);
+const pts=i=>PT[i]??0;
 function players(){const m={};S.levels.forEach((l,i)=>l.rec.forEach(r=>{const p=m[r.p]||(m[r.p]={n:r.p,pts:0,c:0});if(r.pct>=100){p.pts+=pts(i);p.c++}}));return Object.values(m).sort((a,b)=>b.pts-a.pts)}
 function creators(){const m={};S.levels.forEach(l=>{if(l.cp)m[l.by]=(m[l.by]||0)+l.cp});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
 const newsCard=(n,i)=>`<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><p>${esc(n.x).replace(/\n/g,'<br>')}</p>${admin?`<button class="s g" data-act="delN" data-i="${i}">Удалить</button>`:''}</div>`;
