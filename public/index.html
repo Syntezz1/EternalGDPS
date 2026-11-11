@@ -37,6 +37,10 @@ header .s.g{color:#f5f5f5;border-color:#555}
 .b.dc{background:#5865f2;color:#fff}
 .b.yt{background:#f00;color:#fff}
 .b.dl{background:#fff;color:#0a0a0a;border:2px solid var(--tx)}
+.pv{display:block;position:relative;margin:10px 0;border-radius:8px;overflow:hidden;border:3px solid var(--bd);line-height:0}
+.pv img,.ni{width:100%;height:auto;display:block}
+.ni{border-radius:8px;margin:10px 0}
+.pl{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;background:#f00c;color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;line-height:1;padding-left:4px}
 .steps p{margin:.35em 0;overflow-wrap:anywhere}
 .mu{color:var(--mu);font-size:.9rem}
 .lv{display:flex;gap:12px;align-items:flex-start}
@@ -50,7 +54,7 @@ details{margin-top:8px}summary{cursor:pointer;font-weight:700}
 .tr span:first-child{color:var(--ac);font-weight:900;min-width:24px}
 .tr span:nth-child(2){flex:1}
 a{color:var(--ac)}
-dialog{border:3px solid var(--bd);border-radius:10px;background:var(--pn);color:var(--tx);width:min(92vw,420px)}
+dialog{border:3px solid var(--bd);border-radius:10px;background:var(--pn);color:var(--tx);width:min(92vw,420px);max-height:90vh;overflow:auto}
 dialog::backdrop{background:#0008}
 label{display:block;margin:8px 0;font-weight:700;font-size:.9rem}
 input,textarea{width:100%;font:16px Arial,sans-serif;padding:8px;margin-top:3px;border:2px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
@@ -73,7 +77,12 @@ const PT=[];for(let v=1000;v>=600;v-=40)PT.push(v);for(let v=580;v>=400;v-=20)PT
 const pts=i=>PT[i]??0;
 function players(){const m={};S.levels.forEach((l,i)=>l.rec.forEach(r=>{const p=m[r.p]||(m[r.p]={n:r.p,pts:0,c:0});if(r.pct>=100){p.pts+=pts(i);p.c++}}));return Object.values(m).sort((a,b)=>b.pts-a.pts)}
 function creators(){const m={};S.levels.forEach(l=>{if(l.cp)m[l.by]=(m[l.by]||0)+l.cp});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
-const newsCard=(n,i)=>`<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><p>${esc(n.x).replace(/\n/g,'<br>')}</p>${admin?`<button class="s g" data-act="delN" data-i="${i}">Удалить</button>`:''}</div>`;
+const URLRE=/https?:\/\/[^\s<]+/g;
+const ytId=u=>{const m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/);return m?m[1]:''};
+const ui=x=>/^(https?:\/\/|\/api\/img\/)/i.test(x||'')?esc(x):'';
+const linkify=t=>esc(t).replace(URLRE,m=>`<a href="${m}" target="_blank" rel="noopener">${m}</a>`).replace(/\n/g,'<br>');
+const newsCard=(n,i)=>{const yt=(String(n.x).match(URLRE)||[]).map(ytId).find(Boolean);
+return `<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><p>${linkify(n.x)}</p>${ui(n.img)?`<img class="ni" src="${ui(n.img)}" alt="" loading="lazy">`:''}${yt?`<a class="pv" href="https://www.youtube.com/watch?v=${yt}" target="_blank" rel="noopener" aria-label="Смотреть на YouTube"><img src="https://i.ytimg.com/vi/${yt}/hqdefault.jpg" alt="Превью видео" loading="lazy"><span class="pl">▶</span></a>`:''}${admin?`<div class="row"><button class="s g" data-act="edN" data-i="${i}">Править</button><button class="s g" data-act="delN" data-i="${i}">Удалить</button></div>`:''}</div>`};
 const R={
 home(){const c=S.cfg,lk=[['discord','Discord','dc'],['download','Скачать клиент','dl'],['youtube','▶ YouTube','yt']].filter(([k])=>c[k]).map(([k,t,cl])=>`<a class="b ${cl}" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
 return `<section class="hero"><div class="hh">${logo(92)}<div><h1>${esc(c.name)}</h1><p>${esc(c.tag)}</p></div></div><div class="row">${lk||'<span class="mu">Ссылки добавляются в режиме админа.</span>'}</div>${admin?'<button class="s g" data-act="cfg">Править главную</button>':''}</section>
@@ -100,8 +109,12 @@ $('#app').innerHTML=R[r]()}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
 function queueSave(){clearTimeout(timer);timer=setTimeout(async()=>{try{const r=await fetch('/api/save',{method:'POST',headers:{'content-type':'application/json','x-admin-password':pw},body:JSON.stringify(S)});if(r.status==401){logout();render();toast('Сессия истекла, войдите снова')}else if(!r.ok)toast('Не сохранилось');else toast('Сохранено')}catch(e){toast('Нет связи с сервером')}},600)}
 const commit=()=>{render();queueSave()};
-function ask(t,f,v,cb){const d=$('#dlg');d.innerHTML=`<form method="dialog"><h3>${t}</h3>${f.map(([k,l,ty])=>`<label>${l}${ty=='area'?`<textarea name="${k}">${esc(v[k])}</textarea>`:`<input name="${k}" ${ty=='number'?'type="number"':ty=='pw'?'type="password"':''} value="${esc(v[k])}">`}</label>`).join('')}<div class="row"><button class="b" value="ok">Сохранить</button><button class="b g" value="x" formnovalidate>Отмена</button></div></form>`;
+function ask(t,f,v,cb){const d=$('#dlg');d.innerHTML=`<form method="dialog"><h3>${t}</h3>${f.map(([k,l,ty])=>`<label>${l}${ty=='file'?`<input type="file" name="${k}" accept="image/*">`:ty=='area'?`<textarea name="${k}">${esc(v[k])}</textarea>`:`<input name="${k}" ${ty=='number'?'type="number"':ty=='pw'?'type="password"':''} value="${esc(v[k])}">`}</label>`).join('')}<div class="row"><button class="b" value="ok">Сохранить</button><button class="b g" value="x" formnovalidate>Отмена</button></div></form>`;
 const fm=d.querySelector('form');d.onclose=()=>{if(d.returnValue=='ok'){if(cb(Object.fromEntries(new FormData(fm)))!==false)commit()}};d.returnValue='';d.showModal()}
+const NF=[['t','Заголовок'],['x','Текст (ссылки кликабельны, YouTube покажет превью)','area'],['img','Картинка: ссылка (необязательно)'],['f','Или загрузить файл с компьютера','file']];
+async function uploadImg(f){const bm=await createImageBitmap(f);const sc=Math.min(1,1280/bm.width);const c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bm,0,0,c.width,c.height);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));const r=await fetch('/api/upload',{method:'POST',headers:{'x-admin-password':pw,'content-type':'image/jpeg'},body:blob});if(!r.ok)throw new Error('upload');return (await r.json()).url}
+async function saveNews(v,i){let img=(v.img||'').trim();const f=v.f;if(f&&f.size){toast('Загружаю картинку…');try{img=await uploadImg(f)}catch(e){return toast('Не удалось загрузить картинку')}}
+const o={t:v.t||'Новость',x:v.x||'',img};if(i==null)S.news.unshift({d:new Date().toISOString().slice(0,10),...o});else Object.assign(S.news[i],o);commit()}
 const LF=[['n','Название'],['by','Автор'],['ver','Верифаер'],['cp','Креатор поинты','number'],['likes','Лайки','number'],['vid','Ссылка на видео'],['pos','Позиция в списке','number']];
 function putL(v,i){const L=S.levels,o={n:v.n||'Без названия',by:v.by||'?',ver:v.ver||'',cp:+v.cp||0,likes:+v.likes||0,vid:v.vid||'',rec:i==null?[]:L[i].rec};if(i!=null)L.splice(i,1);const p=Math.min(Math.max(+v.pos||L.length+1,1),L.length+1);L.splice(p-1,0,o)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j,L=S.levels;
@@ -116,7 +129,8 @@ dn:()=>{if(i<L.length-1){[L[i+1],L[i]]=[L[i],L[i+1]];commit()}},
 addR:()=>ask('Рекорд на «'+esc(L[i].n)+'»',[['p','Игрок'],['pct','Процент','number'],['v','Ссылка на видео']],{pct:100},v=>{if(v.p&&v.p.trim())L[i].rec.push({p:v.p.trim(),pct:Math.min(100,+v.pct||0),v:v.v||''})}),
 delR:()=>{L[i].rec.splice(j,1);commit()},
 delL:()=>{L.splice(i,1);commit()},
-addN:()=>ask('Новость',[['t','Заголовок'],['x','Текст','area']],{},v=>S.news.unshift({d:new Date().toISOString().slice(0,10),t:v.t||'Новость',x:v.x||''})),
+addN:()=>ask('Новость',NF,{},v=>{saveNews(v);return false}),
+edN:()=>ask('Новость',NF,S.news[i],v=>{saveNews(v,i);return false}),
 delN:()=>{S.news.splice(i,1);commit()}};
 A[a]&&A[a]()});
 addEventListener('hashchange',render);
