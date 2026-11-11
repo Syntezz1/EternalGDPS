@@ -32,7 +32,7 @@ function clean(b) {
       })),
     })),
     news: (Array.isArray(b?.news) ? b.news : []).slice(0, 200).map((n) => ({
-      d: str(n.d, 10), t: str(n.t, 120), x: str(n.x, 4000),
+      d: str(n.d, 10), t: str(n.t, 120), x: str(n.x, 4000), img: str(n.img, 300),
     })),
   };
 }
@@ -56,6 +56,37 @@ export default async (req) => {
     try { body = await req.json(); } catch { return new Response("bad json", { status: 400 }); }
     await store.setJSON("state", clean(body));
     return Response.json({ ok: true });
+  }
+
+  if (req.method === "GET" && route.startsWith("img/")) {
+    const key = route.slice(4);
+    if (!/^[a-f0-9]{32}$/.test(key)) return new Response("not found", { status: 404 });
+    const r = await getStore("gd-images").getWithMetadata(key, { type: "arrayBuffer" });
+    if (!r) return new Response("not found", { status: 404 });
+    return new Response(r.data, {
+      headers: {
+        "content-type": r.metadata?.type || "image/jpeg",
+        "cache-control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
+  if (req.method === "POST" && route === "upload") {
+    const pw = process.env.ADMIN_PASSWORD;
+    if (!pw || req.headers.get("x-admin-password") !== pw) {
+      return new Response("unauthorized", { status: 401 });
+    }
+    const type = req.headers.get("content-type") || "";
+    if (!["image/jpeg", "image/png", "image/webp"].includes(type)) {
+      return new Response("bad type", { status: 415 });
+    }
+    const buf = await req.arrayBuffer();
+    if (buf.byteLength === 0 || buf.byteLength > 2000000) {
+      return new Response("bad size", { status: 413 });
+    }
+    const key = crypto.randomUUID().replace(/-/g, "");
+    await getStore("gd-images").set(key, buf, { metadata: { type } });
+    return Response.json({ url: `/api/img/${key}` });
   }
 
   return new Response("not found", { status: 404 });
