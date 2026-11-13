@@ -26,7 +26,7 @@ function clean(b) {
     },
     levels: (Array.isArray(b?.levels) ? b.levels : []).slice(0, 500).map((l) => ({
       n: str(l.n, 100), by: str(l.by, 60), ver: str(l.ver, 60),
-      cp: num(l.cp, 0, 1000), likes: num(l.likes, 0, 1e9), vid: str(l.vid, 300),
+      cp: num(l.cp, 0, 1000), likes: num(l.likes, 0, 1e9), vid: str(l.vid, 300), img: str(l.img, 300),
       rec: (Array.isArray(l.rec) ? l.rec : []).slice(0, 500).map((r) => ({
         p: str(r.p, 60), pct: num(r.pct, 0, 100), v: str(r.v, 300),
       })),
