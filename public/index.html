@@ -50,6 +50,8 @@ header .s.g{color:#f5f5f5;border-color:#555}
 .th{width:210px;max-width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;flex:none;background:#0d0d0d;display:block}
 .ph{display:flex;align-items:center;justify-content:center;border:2px solid var(--bd)}
 .sep{color:var(--bd)}
+.ctl2{display:flex;gap:6px;margin-left:8px}
+.tr{align-items:center}
 .vf{color:var(--ac)}
 @media (max-width:600px){.lv{flex-wrap:wrap}.tl,.th{width:100%}.in{flex-basis:100%}}
 .in h3{margin:0}
@@ -74,15 +76,15 @@ textarea{min-height:90px}
 <dialog id="dlg"></dialog>
 <div id="toast"></div>
 <script>
-let S={cfg:{name:'',tag:'',discord:'',download:'',youtube:'',steps:''},levels:[],news:[]},pw='';
+let S={cfg:{name:'',tag:'',discord:'',download:'',youtube:'',steps:''},levels:[],news:[],creators:[],best:[]},pw='';
 let admin=false,canEdit=true,timer;
 const $=s=>document.querySelector(s);
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const u=x=>/^https?:\/\//i.test(x||'')?esc(x):'#';
 const PT=[];for(let v=1000;v>=600;v-=40)PT.push(v);for(let v=580;v>=400;v-=20)PT.push(v);for(let v=396;v>=284;v-=4)PT.push(v);for(let v=280;v>=80;v-=8)PT.push(v);for(let v=79;v>=6;v--)PT.push(v);
 const pts=i=>PT[i]??0;
-function players(){const m={};S.levels.forEach((l,i)=>l.rec.forEach(r=>{const p=m[r.p]||(m[r.p]={n:r.p,pts:0,c:0});if(r.pct>=100){p.pts+=pts(i);p.c++}}));return Object.values(m).sort((a,b)=>b.pts-a.pts)}
-function creators(){const m={};S.levels.forEach(l=>{if(l.cp)m[l.by]=(m[l.by]||0)+l.cp});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function players(){const m={};S.levels.forEach((l,i)=>{const seen=new Set();const add=n=>{n=String(n||'').trim();if(!n)return;const k=n.toLowerCase();if(seen.has(k))return;seen.add(k);const p=m[k]||(m[k]={n,pts:0,c:0});p.pts+=pts(i);p.c++};add(l.ver);l.rec.forEach(r=>{if(r.pct>=100)add(r.p)})});return Object.values(m).sort((a,b)=>b.pts-a.pts||b.c-a.c)}
+function creators(){return [...S.creators].sort((a,b)=>b.p-a.p)}
 const URLRE=/https?:\/\/[^\s<]+/g;
 const ytId=u=>{const m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/);return m?m[1]:''};
 const ui=x=>/^(https?:\/\/|\/api\/img\/)/i.test(x||'')?esc(x):'';
@@ -92,13 +94,14 @@ return `<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><
 const R={
 home(){const c=S.cfg,lk=[['discord','Discord','dc'],['download','Скачать клиент','dl'],['youtube','▶ YouTube','yt']].filter(([k])=>c[k]).map(([k,t,cl])=>`<a class="b ${cl}" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
 return `<section class="hero"><div class="hh">${logo(92)}<div><h1>${esc(c.name)}</h1><p>${esc(c.tag)}</p></div></div><div class="row">${lk||'<span class="mu">Ссылки добавляются в режиме админа.</span>'}</div>${admin?'<button class="s g" data-act="cfg">Править главную</button>':''}</section>
-<div class="grid"><div class="card"><b>${S.levels.length}</b>уровней в списке</div><div class="card"><b>${players().length}</b>игроков с рекордами</div><div class="card"><b>${S.news.length}</b>новостей</div></div>
+<div class="grid"><div class="card"><b>${S.levels.length}</b>уровней в списке</div><div class="card"><b>${players().length}</b>игроков в рейтинге</div><div class="card"><b>${S.news.length}</b>новостей</div></div>
 <div class="card"><h2>Как подключиться</h2><div class="steps">${c.steps.split('\n').filter(Boolean).map(s=>`<p>${esc(s).replace(/https?:\/\/[^\s<]+/g,m=>`<a href="${m}" target="_blank" rel="noopener">${m}</a>`)}</p>`).join('')}</div></div>
 ${S.news.slice(0,1).map((n)=>newsCard(n,0)).join('')}`},
 list(){return `<h1>Демонлист</h1>${admin?'<div class="row"><button class="b" data-act="addL">Добавить уровень</button></div>':''}`+(S.levels.map((l,i)=>`<div class="card lv">${thumb(l)}<div class="in"><h3><span class="rk">#${i+1}</span>${esc(l.n)}</h3><div class="mu">${esc(l.by)} <span class="sep">|</span> <b class="vf">${esc(l.ver||'—')}</b> · ${pts(i)} очков${l.vid?` · <a href="${u(l.vid)}" target="_blank" rel="noopener">Видео</a>`:''}</div><details><summary>Рекорды (${l.rec.length})</summary>${l.rec.map((r,j)=>`<div class="rec">${esc(r.p)}: ${esc(r.pct)}%${r.v?` <a href="${u(r.v)}" target="_blank" rel="noopener">видео</a>`:''}${admin?` <button class="s g" data-act="delR" data-i="${i}" data-j="${j}">Удалить</button>`:''}</div>`).join('')||'<div class="mu">Пока нет рекордов.</div>'}</details></div>${admin?`<div class="ctl"><button class="s" data-act="up" data-i="${i}">Выше</button><button class="s" data-act="dn" data-i="${i}">Ниже</button><button class="s g" data-act="edL" data-i="${i}">Править</button><button class="s g" data-act="addR" data-i="${i}">Рекорд</button><button class="s g" data-act="delL" data-i="${i}">Удалить</button></div>`:''}</div>`).join('')||'<div class="card">Список пуст. Включите режим админа и добавьте первый уровень.</div>')},
-top(){const L=[...S.levels].sort((a,b)=>b.likes-a.likes).slice(0,10);
-const t=(h,rows)=>`<div class="card"><h2>${h}</h2>${rows.map((r,i)=>`<div class="tr"><span>${i+1}</span><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')||'<div class="mu">Пока пусто.</div>'}</div>`;
-return `<h1>Топы</h1>`+t('Креатор поинты',creators().slice(0,10))+t('Игроки по очкам листа',players().slice(0,10).map(p=>[p.n,p.pts+' очков, '+p.c+' ур.']))+t('Лучшие уровни по лайкам',L.map(l=>[l.n+' ('+l.by+')',l.likes+' лайков']))},
+best(){return `<h1>Лучшие уровни</h1>${admin?'<div class="row"><button class="b" data-act="addB">Добавить уровень</button></div>':''}`+(S.best.map((l,i)=>`<div class="card lv">${thumb(l)}<div class="in"><h3>${esc(l.n)}</h3><div class="mu">${l.by?esc(l.by)+' · ':''}ID: <b class="vf">${esc(l.id||'—')}</b>${l.id?` <button class="s g" data-act="cpId" data-id="${esc(l.id)}">Копировать</button>`:''}</div></div>${admin?`<div class="ctl"><button class="s" data-act="upB" data-i="${i}">Выше</button><button class="s" data-act="dnB" data-i="${i}">Ниже</button><button class="s g" data-act="edB" data-i="${i}">Править</button><button class="s g" data-act="delB" data-i="${i}">Удалить</button></div>`:''}</div>`).join('')||'<div class="card">Пока нет добавленных уровней.</div>')},
+top(){const row=(i,name,val,ctl)=>`<div class="tr"><span>${i+1}</span><span>${esc(name)}</span><b>${esc(val)}</b>${ctl||''}</div>`;
+const cr=creators();
+return `<h1>Топы</h1><div class="card"><h2>Креатор поинты</h2>${admin?'<div class="row"><button class="b" data-act="addC">Добавить креатора</button></div>':''}${cr.slice(0,25).map((c,i)=>{const k=S.creators.indexOf(c);return row(i,c.n,c.p+' CP',admin?`<span class="ctl2"><button class="s g" data-act="edC" data-i="${k}">Править</button><button class="s g" data-act="delC" data-i="${k}">Удалить</button></span>`:'')}).join('')||'<div class="mu">Пока пусто.</div>'}</div><div class="card"><h2>Лучшие игроки</h2><div class="mu">Очки за пройденные и верифнутые уровни демонлиста.</div>${players().slice(0,25).map((p,i)=>row(i,p.n,p.pts+' очков, '+p.c+' ур.')).join('')||'<div class="mu">Пока пусто.</div>'}</div>`},
 news(){return `<h1>Новости</h1>${admin?'<div class="row"><button class="b" data-act="addN">Добавить новость</button></div>':''}`+(S.news.map(newsCard).join('')||'<div class="card">Новостей пока нет.</div>')}
 };
 try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
@@ -109,7 +112,7 @@ const SP=[0,1,2,3,4,5,6,7].map(i=>{const x=96+i*40;return `M${x} 420L${x+20} 376
 const logo=n=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${n}" height="${n}" role="img" aria-label="Eternal GDPS"><rect width="512" height="512" rx="104" fill="#0d0d0d"/><rect x="14" y="14" width="484" height="484" rx="92" fill="none" stroke="#e10600" stroke-width="12"/><path d="${INF}" fill="none" stroke="#e10600" stroke-width="36" stroke-linejoin="round" stroke-linecap="round"/><path d="${INF}" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/><rect x="96" y="420" width="320" height="14" fill="#fff"/><path fill="#e10600" d="${SP}"/></svg>`;
 {const l=document.createElement('link');l.rel='icon';l.href='data:image/svg+xml,'+encodeURIComponent(logo(64));document.head.appendChild(l)}
 const thumb=l=>{const y=ytId(l.vid||'');const src=ui(l.img)||(y?`https://i.ytimg.com/vi/${y}/hqdefault.jpg`:'');const inner=src?`<img class="th" src="${src}" alt="" loading="lazy">`:`<div class="th ph">${logo(56)}</div>`;return l.vid&&u(l.vid)!=='#'?`<a class="tl" href="${u(l.vid)}" target="_blank" rel="noopener" aria-label="Смотреть видео">${inner}</a>`:inner};
-const NAV=[['home','Главная'],['list','Демонлист'],['top','Топы'],['news','Новости']];
+const NAV=[['home','Главная'],['list','Демонлист'],['best','Лучшие уровни'],['top','Топы'],['news','Новости']];
 function render(){const r=R[location.hash.slice(1)]?location.hash.slice(1):'home';
 $('#nav').innerHTML=`<a class="logo" href="#home" aria-label="Главная">${logo(38)}</a>`+NAV.map(([k,t])=>`<a href="#${k}" class="${k==r?'on':''}">${t}</a>`).join('')+`<button id="thm" class="s g" data-act="theme">${curTheme()=='dark'?'☀ День':'☾ Ночь'}</button>`+(canEdit?`<button id="adm" class="s ${admin?'':'g'}" data-act="adm">${admin?'Выйти из админки':'Режим админа'}</button>`:'');
 $('#app').innerHTML=R[r]()}
@@ -122,9 +125,13 @@ const NF=[['t','Заголовок'],['x','Текст (ссылки кликаб
 async function uploadImg(f){const bm=await createImageBitmap(f);const sc=Math.min(1,1280/bm.width);const c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bm,0,0,c.width,c.height);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));const r=await fetch('/api/upload',{method:'POST',headers:{'x-admin-password':pw,'content-type':'image/jpeg'},body:blob});if(!r.ok)throw new Error('upload');return (await r.json()).url}
 async function saveNews(v,i){let img=(v.img||'').trim();const f=v.f;if(f&&f.size){toast('Загружаю картинку…');try{img=await uploadImg(f)}catch(e){return toast('Не удалось загрузить картинку')}}
 const o={t:v.t||'Новость',x:v.x||'',img};if(i==null)S.news.unshift({d:new Date().toISOString().slice(0,10),...o});else Object.assign(S.news[i],o);commit()}
+const BF=[['n','Название уровня'],['id','ID уровня'],['by','Автор (необязательно)'],['img','Картинка: ссылка (необязательно)'],['f','Или загрузить картинку с компьютера','file']];
+const CF=[['n','Ник креатора'],['p','Креатор поинты','number']];
+async function saveBest(v,i){let img=(v.img||'').trim();const f=v.f;if(f&&f.size){toast('Загружаю картинку…');try{img=await uploadImg(f)}catch(e){return toast('Не удалось загрузить картинку')}}
+const o={n:v.n||'Без названия',id:String(v.id||'').replace(/\D/g,''),by:v.by||'',img};if(i==null)S.best.push(o);else S.best[i]=o;commit()}
 async function saveLevel(v,i){let img=(v.img||'').trim();const f=v.f;if(f&&f.size){toast('Загружаю превью…');try{img=await uploadImg(f)}catch(e){return toast('Не удалось загрузить превью')}}
 putL({...v,img},i);commit()}
-const LF=[['n','Название'],['by','Автор'],['ver','Верифаер'],['cp','Креатор поинты','number'],['likes','Лайки','number'],['vid','Ссылка на видео'],['img','Превью: ссылка на картинку (необязательно)'],['f','Или загрузить превью с компьютера','file'],['pos','Позиция в списке','number']];
+const LF=[['n','Название'],['by','Автор'],['ver','Верифаер'],['vid','Ссылка на видео'],['img','Превью: ссылка на картинку (необязательно)'],['f','Или загрузить превью с компьютера','file'],['pos','Позиция в списке','number']];
 function putL(v,i){const L=S.levels,o={n:v.n||'Без названия',by:v.by||'?',ver:v.ver||'',cp:+v.cp||0,likes:+v.likes||0,vid:v.vid||'',img:v.img||'',rec:i==null?[]:L[i].rec};if(i!=null)L.splice(i,1);const p=Math.min(Math.max(+v.pos||L.length+1,1),L.length+1);L.splice(p-1,0,o)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j,L=S.levels;
 if(a.startsWith('del')&&!b.dataset.arm){b.dataset.arm=1;b.textContent='Точно?';return}
@@ -140,13 +147,22 @@ delR:()=>{L[i].rec.splice(j,1);commit()},
 delL:()=>{L.splice(i,1);commit()},
 addN:()=>ask('Новость',NF,{},v=>{saveNews(v);return false}),
 edN:()=>ask('Новость',NF,S.news[i],v=>{saveNews(v,i);return false}),
-delN:()=>{S.news.splice(i,1);commit()}};
+delN:()=>{S.news.splice(i,1);commit()},
+addB:()=>ask('Лучший уровень',BF,{},v=>{saveBest(v);return false}),
+edB:()=>ask('Лучший уровень',BF,S.best[i],v=>{saveBest(v,i);return false}),
+upB:()=>{if(i>0){[S.best[i-1],S.best[i]]=[S.best[i],S.best[i-1]];commit()}},
+dnB:()=>{if(i<S.best.length-1){[S.best[i+1],S.best[i]]=[S.best[i],S.best[i+1]];commit()}},
+delB:()=>{S.best.splice(i,1);commit()},
+addC:()=>ask('Креатор',CF,{p:0},v=>{S.creators.push({n:(v.n||'').trim()||'?',p:+v.p||0})}),
+edC:()=>ask('Креатор',CF,S.creators[i],v=>{Object.assign(S.creators[i],{n:(v.n||'').trim()||'?',p:+v.p||0})}),
+delC:()=>{S.creators.splice(i,1);commit()},
+cpId:()=>{navigator.clipboard?.writeText(b.dataset.id).then(()=>toast('ID скопирован'),()=>toast('Не удалось скопировать'))}};
 A[a]&&A[a]()});
 addEventListener('hashchange',render);
 function logout(){admin=false;pw='';try{sessionStorage.removeItem('pw')}catch(e){}}
 async function login(p){try{const r=await fetch('/api/login',{method:'POST',headers:{'x-admin-password':p}});if(r.ok){pw=p;admin=true;try{sessionStorage.setItem('pw',p)}catch(e){}render()}else toast('Неверный пароль')}catch(e){toast('Нет связи с сервером')}}
 $('#app').innerHTML='<div class="card">Загрузка…</div>';
-(async()=>{try{S=await(await fetch('/api/data',{cache:'no-store'})).json()}catch(e){$('#app').innerHTML='<div class="card">Не удалось загрузить данные. Обновите страницу.</div>';return}
+(async()=>{try{S=await(await fetch('/api/data',{cache:'no-store'})).json();S.creators=S.creators||[];S.best=S.best||[]}catch(e){$('#app').innerHTML='<div class="card">Не удалось загрузить данные. Обновите страницу.</div>';return}
 try{const p=sessionStorage.getItem('pw');if(p){const r=await fetch('/api/login',{method:'POST',headers:{'x-admin-password':p}});if(r.ok){pw=p;admin=true}}}catch(e){}
 render()})();
 </script>
