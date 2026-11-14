@@ -24,6 +24,12 @@ function clean(b) {
       name: str(c.name, 80), tag: str(c.tag, 300), discord: str(c.discord, 300),
       download: str(c.download, 300), youtube: str(c.youtube, 300), steps: str(c.steps, 1000),
     },
+    creators: (Array.isArray(b?.creators) ? b.creators : []).slice(0, 200).map((c) => ({
+      n: str(c.n, 60), p: num(c.p, 0, 1e9),
+    })),
+    best: (Array.isArray(b?.best) ? b.best : []).slice(0, 300).map((l) => ({
+      n: str(l.n, 100), id: str(l.id, 20), by: str(l.by, 60), img: str(l.img, 300),
+    })),
     levels: (Array.isArray(b?.levels) ? b.levels : []).slice(0, 500).map((l) => ({
       n: str(l.n, 100), by: str(l.by, 60), ver: str(l.ver, 60),
       cp: num(l.cp, 0, 1000), likes: num(l.likes, 0, 1e9), vid: str(l.vid, 300), img: str(l.img, 300),
