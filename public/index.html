@@ -92,7 +92,7 @@ const linkify=t=>esc(t).replace(URLRE,m=>`<a href="${m}" target="_blank" rel="no
 const newsCard=(n,i)=>{const yt=(String(n.x).match(URLRE)||[]).map(ytId).find(Boolean);
 return `<div class="card"><div class="mu">${esc(n.d)}</div><h3>${esc(n.t)}</h3><p>${linkify(n.x)}</p>${ui(n.img)?`<img class="ni" src="${ui(n.img)}" alt="" loading="lazy">`:''}${yt?`<a class="pv" href="https://www.youtube.com/watch?v=${yt}" target="_blank" rel="noopener" aria-label="Смотреть на YouTube"><img src="https://i.ytimg.com/vi/${yt}/hqdefault.jpg" alt="Превью видео" loading="lazy"><span class="pl">▶</span></a>`:''}${admin?`<div class="row"><button class="s g" data-act="edN" data-i="${i}">Править</button><button class="s g" data-act="delN" data-i="${i}">Удалить</button></div>`:''}</div>`};
 const R={
-home(){const c=S.cfg,lk=[['discord','Discord','dc'],['download','Скачать клиент','dl'],['youtube','▶ YouTube','yt']].filter(([k])=>c[k]).map(([k,t,cl])=>`<a class="b ${cl}" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
+home(){const c=S.cfg,lk=[['discord','Discord','dc'],['youtube','▶ YouTube','yt']].filter(([k])=>c[k]).map(([k,t,cl])=>`<a class="b ${cl}" href="${u(c[k])}" target="_blank" rel="noopener">${t}</a>`).join('');
 return `<section class="hero"><div class="hh">${logo(92)}<div><h1>${esc(c.name)}</h1><p>${esc(c.tag)}</p></div></div><div class="row">${lk||'<span class="mu">Ссылки добавляются в режиме админа.</span>'}</div>${admin?'<button class="s g" data-act="cfg">Править главную</button>':''}</section>
 <div class="grid"><div class="card"><b>${S.levels.length}</b>уровней в списке</div><div class="card"><b>${players().length}</b>игроков в рейтинге</div><div class="card"><b>${S.news.length}</b>новостей</div></div>
 <div class="card"><h2>Как подключиться</h2><div class="steps">${c.steps.split('\n').filter(Boolean).map(s=>`<p>${esc(s).replace(/https?:\/\/[^\s<]+/g,m=>`<a href="${m}" target="_blank" rel="noopener">${m}</a>`)}</p>`).join('')}</div></div>
@@ -137,7 +137,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
 if(a.startsWith('del')&&!b.dataset.arm){b.dataset.arm=1;b.textContent='Точно?';return}
 if(a=='theme'){setTheme(curTheme()=='dark'?'light':'dark');return render()}
 if(a=='adm'){if(admin){logout();return render()}return ask('Вход для админа',[['pw','Пароль','pw']],{},v=>{login(v.pw);return false})}
-const A={cfg:()=>ask('Главная страница',[['name','Название'],['tag','Описание'],['discord','Ссылка на Discord'],['download','Ссылка на клиент'],['youtube','Ссылка на YouTube'],['steps','Как подключиться (строка = абзац, ссылки кликабельны)','area']],S.cfg,v=>Object.assign(S.cfg,v)),
+const A={cfg:()=>ask('Главная страница',[['name','Название'],['tag','Описание'],['discord','Ссылка на Discord'],['youtube','Ссылка на YouTube'],['steps','Как подключиться (строка = абзац, ссылки кликабельны)','area']],S.cfg,v=>Object.assign(S.cfg,v)),
 addL:()=>ask('Новый уровень',LF,{pos:L.length+1,cp:0,likes:0},v=>{saveLevel(v);return false}),
 edL:()=>ask('Уровень',LF,{...L[i],pos:i+1},v=>{saveLevel(v,i);return false}),
 up:()=>{if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];commit()}},
